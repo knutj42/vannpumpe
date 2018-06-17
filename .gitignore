@@ -1,0 +1,5 @@
+__pycache__
+*.egg-info
+.idea/
+server/.python_venv/
+nodemcu/nodemcu_firmware_localcopy

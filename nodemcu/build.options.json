@@ -1,0 +1,10 @@
+{
+  "builtInLibrariesFolders": "/home/knut.johannessen/Applications/arduino-1.6.9/libraries",
+  "customBuildProperties": "build.warn_data_percentage=75",
+  "fqbn": "esp8266:esp8266:nodemcuv2:CpuFrequency=80,UploadSpeed=921600,FlashSize=4M3M",
+  "hardwareFolders": "/home/knut.johannessen/Applications/arduino-1.6.9/hardware,/home/knut.johannessen/.arduino15/packages",
+  "otherLibrariesFolders": "/home/knut.johannessen/Arduino/libraries",
+  "runtime.ide.version": "10609",
+  "sketchLocation": "/home/knut.johannessen/Documents/Private/vannpumpe/nodemcu/nodemcu.ino",
+  "toolsFolders": "/home/knut.johannessen/Applications/arduino-1.6.9/tools-builder,/home/knut.johannessen/Applications/arduino-1.6.9/hardware/tools/avr,/home/knut.johannessen/.arduino15/packages"
+}
