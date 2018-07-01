@@ -1,11 +1,19 @@
 // This is the version of this sketch. This must be incremented to get OTA updates to work.
-const char * VERSION = "12";
+const char * VERSION = "23";
 const int EXPECTED_TEMPERATURE_DEVICE_COUNT = 3;
 const int PUMP_RUNNING_COUNT_ON_LIMIT = 5;
 
+//#define LOGPOST_INTERVAL 3600000 // The number of milliseconds between each regular log-message.
+const int LOGPOST_INTERVAL = 60000; // The number of milliseconds between each regular log-message.
+const int CHECK_FOR_UPDATE_INTERVAL = 30000; // The number of milliseconds between each check for a new version.
+
+const int waterLevelMeasurementCount = 100;
+const int waterLevelMeasurementDelay = 100;
+
 
 #define WIFI_STATUS_LED_PIN D5
-#define PUMP_PIN D4
+#define PUMP_PIN D6
+#define WATER_LEVEL_PIN A0
 #define ONE_WIRE_BUS D2
 
 
@@ -103,7 +111,7 @@ void setup() {
 
     pinMode(WIFI_STATUS_LED_PIN, OUTPUT);
     pinMode(PUMP_PIN, INPUT);
-    
+    pinMode(WATER_LEVEL_PIN, INPUT);
 
     authorizationToken = String(ESP.getChipId());
 
@@ -114,11 +122,9 @@ void setup() {
 
 unsigned long lastLogPostTime = 0;
 bool hasLoggedOnceAfterStartup = false;
-#define LOGPOST_INTERVAL 3600000 // The number of milliseconds between each regular log-message.
 
 unsigned long lastCheckForUpdateTime = 0;
 bool hasCheckedForUpdateAfterStartup = false;
-#define CHECK_FOR_UPDATE_INTERVAL 30000 // The number of milliseconds between each check for a new version.
 
 bool pumpWasRunningLastLoop = false;
 
@@ -233,6 +239,8 @@ void loop() {
         ESP.restart();
     }
 */
+
+    /* TODO: enable this once we have a good pump-sensor.
     // Do some filtering on the pump-running state by polling the pin multiple times.
     int pumpRunningCount = 0;
     //unsigned long pumpValueSum = 0;
@@ -248,11 +256,16 @@ void loop() {
         
         delay(1);
     }
+     */
+
     /*int averagePumpValue = pumpValueSum / pumpValueLoops;
         USE_SERIAL.print("averagePumpValue:");
         USE_SERIAL.println(averagePumpValue);
-*/
     bool pumpIsRunning = pumpRunningCount >= PUMP_RUNNING_COUNT_ON_LIMIT;
+*/
+    bool pumpIsRunning = false;
+    delay(1000);
+    
 
 
     unsigned long timeUntilNextLog;
@@ -262,11 +275,22 @@ void loop() {
       timeUntilNextLog = LOGPOST_INTERVAL - elapsedTimeSinceLastLog;
     }
 
-    USE_SERIAL.print("pumpRunningCount:");
-    USE_SERIAL.println(pumpRunningCount);
+    //USE_SERIAL.print("pumpRunningCount:");
+    //USE_SERIAL.println(pumpRunningCount);
 
-    USE_SERIAL.print("pumpIsRunning:");
-    USE_SERIAL.println(pumpIsRunning);
+    //USE_SERIAL.print("pumpIsRunning:");
+    //USE_SERIAL.println(pumpIsRunning);
+
+    int waterLevelAcc = 0;
+    for (int i=0; i<waterLevelMeasurementCount ; i++) {
+      waterLevelAcc += analogRead(WATER_LEVEL_PIN);
+      delay(waterLevelMeasurementDelay);
+    }
+    int waterLevel = waterLevelAcc / waterLevelMeasurementCount;
+    
+    USE_SERIAL.print("waterLevel:");
+    USE_SERIAL.println(waterLevel);
+    
 /*
     USE_SERIAL.print("pumpWasRunningLastLoop:");
     USE_SERIAL.println(pumpWasRunningLastLoop);
@@ -317,6 +341,7 @@ void loop() {
     }
     USE_SERIAL.println("Finished temperatur readings.");
 
+    reading["water-level"] = waterLevel;
 
     if (pumpWasRunningLastLoop != pumpIsRunning) {
         // Send an extra message with the last pump-status. This makes it easier to plot the data with a simple line-diagram.
@@ -325,7 +350,7 @@ void loop() {
             return;
         }
     }
-    reading["pump-running"] = pumpIsRunning ? 1 : 0;
+    //reading["pump-running"] = pumpIsRunning ? 1 : 0;
     if (!sendMessage(reading)) {
         return;
     }

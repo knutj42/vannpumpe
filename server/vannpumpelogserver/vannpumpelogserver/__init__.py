@@ -2,6 +2,8 @@ import collections
 import logging
 import os
 import threading
+import urllib.parse
+import requests
 
 import datetime
 import oauth2client.service_account
@@ -19,11 +21,17 @@ class Store:
     """This is the class that encapsulates the persistent store that the readings are
     stored in.
 
-    This implementation appends the readings to a Google sheet.
+    This implementation appends the readings to a Google sheet and to a elasticsearch database.
     """
 
     def __init__(self):
         self._column_lock = threading.RLock()
+
+        elasticsearch_url = os.environ.get("VANNPUMPE_ELASTICSEARCH_URL")
+        if not elasticsearch_url:
+            raise AssertionError("No 'VANNPUMPE_ELASTICSEARCH_URL' environment variable was specified!")
+
+        self._elasticsearch_post_url = urllib.parse.urljoin(elasticsearch_url, "vannpumpe/log")
 
         keyfilename = os.environ.get("VANNPUMPE_GOOGLE_SERVICE_ACCOUNT_KEYFILE")
         if not keyfilename:
@@ -71,9 +79,10 @@ class Store:
             logger.info("Added a new column: '%s'" % (columnname,))
 
     def append(self, reading):
-        # check if we must update the colums in the spreadsheet
-        reading["timestamp"] = datetime.datetime.utcnow().isoformat(sep=" ")
+        currenttime = datetime.datetime.utcnow()
+        reading["timestamp"] = currenttime.isoformat(sep=" ")
 
+        # check if we must update the colums in the spreadsheet
         values_with_indexes = []
         for column_name, value in reading.items():
             index = self.columnname2index.get(column_name)
@@ -95,6 +104,16 @@ class Store:
                                                          ],
                                                      }).execute()
 
+        # Elasticsearch expects datetimes to be on the format "yyyy/MM/dd HH:mm:ss Z", and the
+        # default timestamp-field is "@timestamp".
+        del reading["timestamp"]
+        reading["@timestamp"] = currenttime.strftime("%Y/%m/%d %H:%M:%S Z")
+
+        response = requests.post(self._elasticsearch_post_url, json=reading)
+        if response.status_code != 201:
+            logger.error(
+                "Failed to store the log-item in elasticsearch! response.status_code:%s  response.text:%s" % (
+                    response.status_code, response.text))
 
 store = Store()
 
