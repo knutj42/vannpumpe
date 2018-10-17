@@ -18,6 +18,12 @@ Vannpumpelogserveren er en python prosess (kildekoden ligger i "./server"
 folderen) som poster måledataene videre til "vannpumpe" indexen i
 en Elasticsearch instans.
 
+Pumpedetektoren er en python prosess (kildekoden ligger i XXX) som leser
+rå-dataene fra elasticsearch og finner ut om pumpen har kjørt. Når en
+pumpe-kjøring blir detektert poster denne prosessen en ny entry til
+"pumprun" indexen i Elasticsearch instansen. Detekteringen gjøres ved
+å se etter plutselige dropp i vannivået.
+
 En Grafana instans på https://robots.knutj.org/grafana brukes til å
 visualisere måledataene. Det er lagt til alerts in Grafana som sender
 emails dersom vannnivået blir for høyt, eller temperaturen i kummen
@@ -30,3 +36,5 @@ ikke er noen aktive Grafana alerts.
 
 TODO:
 Ta backup av elasticsearch og grafana konfigurasjonen.
+Sett opp automatisk backup av elasticsearch dataene (offsite backup)
+
