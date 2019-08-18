@@ -1,5 +1,5 @@
 // This is the version of this sketch. This must be incremented to get OTA updates to work.
-const char * VERSION = "23";
+const char * VERSION = "24";
 const int EXPECTED_TEMPERATURE_DEVICE_COUNT = 3;
 const int PUMP_RUNNING_COUNT_ON_LIMIT = 5;
 
