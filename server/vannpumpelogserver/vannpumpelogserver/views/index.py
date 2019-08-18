@@ -15,13 +15,13 @@ def index():
 
 @app.route('/log', methods=["POST"])
 def add_log_entry():
-    required_auth_token = app.config["AUTHORIZATION_TOKEN"]
+    required_auth_tokens = app.config["AUTHORIZATION_TOKEN"].split(",")
     auth_token = flask.request.headers.get("AUTHORIZATION")
     if not auth_token:
-        logger.warning("/log was called with an AUTHORIZATION header")
+        logger.warning("/log was called without an AUTHORIZATION header")
         raise Unauthorized()
 
-    if auth_token != required_auth_token:
+    if auth_token not in required_auth_tokens:
         logger.warning("/log was called with an invalid AUTHORIZATION header")
         raise Forbidden()
 
