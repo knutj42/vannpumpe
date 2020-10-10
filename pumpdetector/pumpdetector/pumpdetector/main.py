@@ -26,7 +26,7 @@ def format_timestamp(timestamp):
     return timestamp_string
 
 
-pump_run_water_level_limit = int(os.environ.get("PUMP_RUN_WATER_LEVEL_LIMIT", "30"))
+pump_run_water_level_limit = int(os.environ.get("PUMP_RUN_WATER_LEVEL_LIMIT", "15"))
 
 
 def main(elasticsearch_base_url):
