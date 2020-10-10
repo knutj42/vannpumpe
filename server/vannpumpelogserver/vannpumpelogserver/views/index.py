@@ -28,6 +28,13 @@ def add_log_entry():
     log_entry = flask.request.json
     logger.info("Got a log entry: %s", pprint.pformat(log_entry))
 
+    for key, value in list(log_entry.items()):
+        if key.startswith('28'):
+            # this looks like a temperature-reading, so check if it looks sane.
+            if (not isinstance(value, (float, int))) or (value > 50) or (value < -50):
+                logger.info(f"Removing the reading '{key}':{value} from the logentry, since it looks bogus.")
+                del log_entry[key]
+
     store.append(log_entry)
 
     return "ok"

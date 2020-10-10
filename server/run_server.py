@@ -3,7 +3,6 @@ import os
 import os.path
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(name)-12s %(threadName)-10s %(levelname)-8s %(message)s')
-logging.getLogger("googleapiclient.discovery").setLevel(logging.WARNING)
 logging.getLogger("werkzeug").setLevel(logging.WARNING)
 
 from vannpumpelogserver import app
